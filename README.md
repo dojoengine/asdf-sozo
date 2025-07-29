@@ -1,8 +1,8 @@
 <div align="center">
 
-# asdf-katana [![Build](https://github.com/dojoengine/asdf-katana/actions/workflows/build.yml/badge.svg)](https://github.com/dojoengine/asdf-katana/actions/workflows/build.yml) [![Lint](https://github.com/dojoengine/asdf-katana/actions/workflows/lint.yml/badge.svg)](https://github.com/dojoengine/asdf-katana/actions/workflows/lint.yml)
+# asdf-sozo [![Build](https://github.com/dojoengine/asdf-sozo/actions/workflows/build.yml/badge.svg)](https://github.com/dojoengine/asdf-sozo/actions/workflows/build.yml) [![Lint](https://github.com/dojoengine/asdf-sozo/actions/workflows/lint.yml/badge.svg)](https://github.com/dojoengine/asdf-sozo/actions/workflows/lint.yml)
 
-[katana](https://book.dojoengine.org/toolchain/katana) plugin for the [asdf version manager](https://asdf-vm.com).
+[sozo](https://book.dojoengine.org/toolchain/sozo) plugin for the [asdf version manager](https://asdf-vm.com).
 
 </div>
 
@@ -16,32 +16,31 @@
 # Dependencies
 
 - `bash`, `curl`, `tar`, `unzip` and [POSIX utilities](https://pubs.opengroup.org/onlinepubs/9699919799/idx/utilities.html).
-- Optional: Set `ASDF_NATIVE_BUILD=true` environment variable to download native builds (optimized for your specific platform).
 
 # Install
 
 Plugin:
 
 ```shell
-asdf plugin add katana
+asdf plugin add sozo
 # or
-asdf plugin add katana https://github.com/dojoengine/asdf-katana.git
+asdf plugin add sozo https://github.com/dojoengine/asdf-sozo.git
 ```
 
-katana:
+sozo:
 
 ```shell
 # Show all installable versions
-asdf list all katana
+asdf list all sozo
 
 # Install specific version
-asdf install katana latest
+asdf install sozo latest
 
 # Set a version globally (on your ~/.tool-versions file)
-asdf global katana latest
+asdf global sozo latest
 
-# Now katana commands are available
-katana --version
+# Now sozo commands are available
+sozo --version
 ```
 
 Check [asdf](https://github.com/asdf-vm/asdf) readme for more instructions on how to
@@ -51,7 +50,7 @@ install & manage versions.
 
 Contributions of any kind welcome! See the [contributing guide](contributing.md).
 
-[Thanks goes to these contributors](https://github.com/dojoengine/asdf-katana/graphs/contributors)!
+[Thanks goes to these contributors](https://github.com/dojoengine/asdf-sozo/graphs/contributors)!
 
 # License
 
