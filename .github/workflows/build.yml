@@ -21,4 +21,4 @@ jobs:
         with:
           command: sozo --version
           gitref: main
-          version: 1.6.3
+          version: 1.6.2
