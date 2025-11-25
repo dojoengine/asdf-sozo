@@ -68,13 +68,16 @@ get_tag_for_version() {
 }
 
 download_release() {
-	local version filename url tag
+	local version filename url tag url_encoded_tag
 	version="$1"
 	filename="$2"
 
 	tag="$(get_tag_for_version "$version")"
 
-	url="$GH_REPO/releases/download/${tag}/${filename}"
+	# URL-encode the tag (replace / with %2F for tags like sozo/v1.8.1)
+	url_encoded_tag="${tag//\//%2F}"
+
+	url="$GH_REPO/releases/download/${url_encoded_tag}/${filename}"
 
 	echo "* Downloading $TOOL_NAME release $version..."
 	curl "${curl_opts[@]}" -o "$ASDF_DOWNLOAD_PATH/$filename" -C - "$url" || fail "Could not download $url"
@@ -146,10 +149,18 @@ detect_platform_arch() {
 
 get_binary_name() {
 	local version="$1"
+	local prefix
 
 	# Get platform and architecture information to determine file extension
 	read -r PLATFORM EXT ARCH <<<"$(detect_platform_arch)"
 
-	# i.e. dojo_v1.6.2_darwin_arm64.tar.gz
-	echo "dojo_v${version}_${PLATFORM}_${ARCH}.${EXT}"
+	# Starting from version 1.8.1, the binary prefix changed from dojo_ to sozo_
+	if version_gte_1_8_1 "$version"; then
+		prefix="sozo"
+	else
+		prefix="dojo"
+	fi
+
+	# i.e. dojo_v1.6.2_darwin_arm64.tar.gz or sozo_v1.8.1_darwin_arm64.tar.gz
+	echo "${prefix}_v${version}_${PLATFORM}_${ARCH}.${EXT}"
 }
