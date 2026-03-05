@@ -27,24 +27,24 @@ sort_versions() {
 list_github_tags() {
 	git ls-remote --tags --refs "$GH_REPO" |
 		grep -o 'refs/tags/.*' | cut -d/ -f3- |
-		sed 's/^v//' | # Remove leading v from old format (v1.8.0)
-		sed 's/^sozo\/v//' # Remove sozo/v prefix from new format (sozo/v1.8.1)
+		sed -n 's|^sozo/v||p'  # Only match sozo/v* tags (new format)
+}
+
+list_legacy_tags() {
+	git ls-remote --tags --refs "$GH_REPO" |
+		grep -o 'refs/tags/.*' | cut -d/ -f3- |
+		sed -n 's|^v||p'  # Only match v* tags (old format, <=1.8.0)
 }
 
 list_all_versions() {
-	# We filter out nightly, alpha, rc, and 0.x versions
-	list_github_tags | grep -vE "(nightly|alpha|rc|^0\.)"
+	{ list_legacy_tags; list_github_tags; } | grep -vE "(nightly|alpha|rc|^0\.)"
 }
 
-# Compare version numbers to determine if version is >= 1.8.1
-version_gte_1_8_1() {
+is_new_format() {
 	local version="$1"
 	local major minor patch
-
-	# Parse version string (e.g., "1.8.1" -> major=1, minor=8, patch=1)
 	IFS='.' read -r major minor patch <<< "$version"
-
-	# Compare: major > 1 OR (major == 1 AND (minor > 8 OR (minor == 8 AND patch >= 1)))
+	# Versions > 1.8.0 use the new sozo/v* tag and sozo_v* asset format
 	if [ "$major" -gt 1 ]; then
 		return 0
 	elif [ "$major" -eq 1 ]; then
@@ -57,27 +57,18 @@ version_gte_1_8_1() {
 	return 1
 }
 
-# Get the correct tag format based on version
-get_tag_for_version() {
-	local version="$1"
-	if version_gte_1_8_1 "$version"; then
-		echo "sozo/v${version}"
-	else
-		echo "v${version}"
-	fi
-}
-
 download_release() {
-	local version filename url tag url_encoded_tag
+	local version filename url tag
 	version="$1"
 	filename="$2"
 
-	tag="$(get_tag_for_version "$version")"
+	if is_new_format "$version"; then
+		tag="sozo/v${version}"
+	else
+		tag="v${version}"
+	fi
 
-	# URL-encode the tag (replace / with %2F for tags like sozo/v1.8.1)
-	url_encoded_tag="${tag//\//%2F}"
-
-	url="$GH_REPO/releases/download/${url_encoded_tag}/${filename}"
+	url="$GH_REPO/releases/download/${tag}/${filename}"
 
 	echo "* Downloading $TOOL_NAME release $version..."
 	curl "${curl_opts[@]}" -o "$ASDF_DOWNLOAD_PATH/$filename" -C - "$url" || fail "Could not download $url"
@@ -149,18 +140,15 @@ detect_platform_arch() {
 
 get_binary_name() {
 	local version="$1"
-	local prefix
 
 	# Get platform and architecture information to determine file extension
 	read -r PLATFORM EXT ARCH <<<"$(detect_platform_arch)"
 
-	# Starting from version 1.8.1, the binary prefix changed from dojo_ to sozo_
-	if version_gte_1_8_1 "$version"; then
-		prefix="sozo"
+	if is_new_format "$version"; then
+		# i.e. sozo_v1.8.6_darwin_arm64.tar.gz
+		echo "sozo_v${version}_${PLATFORM}_${ARCH}.${EXT}"
 	else
-		prefix="dojo"
+		# i.e. dojo_v1.6.2_darwin_arm64.tar.gz
+		echo "dojo_v${version}_${PLATFORM}_${ARCH}.${EXT}"
 	fi
-
-	# i.e. dojo_v1.6.2_darwin_arm64.tar.gz or sozo_v1.8.1_darwin_arm64.tar.gz
-	echo "${prefix}_v${version}_${PLATFORM}_${ARCH}.${EXT}"
 }

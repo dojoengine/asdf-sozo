@@ -8,8 +8,8 @@ plugin_dir=$(dirname "$(dirname "$current_script_path")")
 # shellcheck source=./lib/utils.bash
 . "${plugin_dir}/lib/utils.bash"
 
-# GitHub's /releases/latest doesn't handle mixed tag formats well (v1.8.0 vs sozo/v1.8.1)
-# So we get all versions and find the latest by semantic versioning
+# Use sorted version list instead of releases/latest redirect,
+# since dojo repo tags now use sozo/v* format which complicates redirect parsing.
 version="$(list_all_versions | sort_versions | tail -n1 | xargs echo)"
 
 printf "%s\n" "$version"
