@@ -27,23 +27,26 @@ sort_versions() {
 list_github_tags() {
 	git ls-remote --tags --refs "$GH_REPO" |
 		grep -o 'refs/tags/.*' | cut -d/ -f3- |
-		sed -n 's|^sozo/v||p'  # Only match sozo/v* tags (new format)
+		sed -n 's|^sozo/v||p' # Only match sozo/v* tags (new format)
 }
 
 list_legacy_tags() {
 	git ls-remote --tags --refs "$GH_REPO" |
 		grep -o 'refs/tags/.*' | cut -d/ -f3- |
-		sed -n 's|^v||p'  # Only match v* tags (old format, <=1.8.0)
+		sed -n 's|^v||p' # Only match v* tags (old format, <=1.8.0)
 }
 
 list_all_versions() {
-	{ list_legacy_tags; list_github_tags; } | grep -vE "(nightly|alpha|rc|^0\.)"
+	{
+		list_legacy_tags
+		list_github_tags
+	} | grep -vE "(nightly|alpha|rc|^0\.)"
 }
 
 is_new_format() {
 	local version="$1"
 	local major minor patch
-	IFS='.' read -r major minor patch <<< "$version"
+	IFS='.' read -r major minor patch <<<"$version"
 	# Versions > 1.8.0 use the new sozo/v* tag and sozo_v* asset format
 	if [ "$major" -gt 1 ]; then
 		return 0
